@@ -145,26 +145,26 @@ button:hover {
 
 <!-- Pagination buttons -->
 <div>
-  <button onclick="loadNFTs(1)">1-100</button>
-  <button onclick="loadNFTs(2)">101-200</button>
-<button onclick="loadNFTs(2)">201-300</button>
-<button onclick="loadNFTs(2)">301-400</button>
-<button onclick="loadNFTs(2)">401-500</button>
-<button onclick="loadNFTs(2)">601-700</button>
-<button onclick="loadNFTs(2)">701-800</button>
-<button onclick="loadNFTs(2)">801-900</button>
-<button onclick="loadNFTs(2)">901-1000</button>
-<button onclick="loadNFTs(2)">1001-1100</button>
-<button onclick="loadNFTs(2)">1101-1200</button>
-<button onclick="loadNFTs(2)">1201-1300</button>
-<button onclick="loadNFTs(2)">1301-1400</button>
-<button onclick="loadNFTs(2)">1401-1500</button>
-<button onclick="loadNFTs(2)">1501-1600</button>
-<button onclick="loadNFTs(2)">1601-1700</button>
-<button onclick="loadNFTs(2)">1701-1800</button>
-<button onclick="loadNFTs(2)">1801-1900</button>
-<button onclick="loadNFTs(2)">1901-2000</button>
-  <!-- Add more buttons as needed -->
+  <button id="button1">1-100</button>
+  <button id="button2">101-200</button>
+  <button id="button3">201-300</button>
+  <button id="button4">301-400</button>
+  <button id="button5">401-500</button>
+  <button id="button6">501-600</button>
+  <button id="button7">601-700</button>
+  <button id="button8">701-800</button>
+  <button id="button9">801-900</button>
+  <button id="button10">901-1000</button>
+  <button id="button11">1001-1100</button>
+  <button id="button12">1101-1200</button>
+  <button id="button13">1201-1300</button>
+  <button id="button14">1301-1400</button>
+  <button id="button15">1401-1500</button>
+  <button id="button16">1501-1600</button>
+  <button id="button17">1601-1700</button>
+  <button id="button18">1701-1800</button>
+  <button id="button19">1801-1900</button>
+  <button id="button20">1901-2000</button>
 </div>
 
 <div class="loading">
@@ -181,40 +181,7 @@ button:hover {
   <p id="overlayRarity"></p>
 </div>
 
-<script>
-  // Set the contract address and RPC endpoint
-  const contractAddress = '0x6D1a6B840714420D425c2F2658CEF390dbD809A7';
-  const rpcEndpoint = 'https://mainnet.skalenodes.com/v1/green-giddy-denebola';
-  const corsProxy = 'https://corsproxy.io/?';
-
-  // Include the OpenZeppelin ERC-721 ABI
-  const abi = [
-    {
-      "constant": true,
-      "inputs": [{"name": "_owner", "type": "address"}],
-      "name": "balanceOf",
-      "outputs": [{"name": "balance", "type": "uint256"}],
-      "payable": false,
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "constant": true,
-      "inputs": [{"name": "_tokenId", "type": "uint256"}],
-      "name": "tokenURI",
-      "outputs": [{"name": "", "type": "string"}],
-      "payable": false,
-      "stateMutability": "view",
-      "type": "function"
-    },
-  ];
-
-  // Initialize web3 with the provided RPC endpoint
-  const web3 = new Web3(new Web3.providers.HttpProvider(rpcEndpoint));
-
-  // Create a contract instance
-  const contract = new web3.eth.Contract(abi, contractAddress);
-
+ <script>
   // Function to add NFTs to the grid
   function addNFTToGrid(metadata, processedRarities, processedWeapons) {
     const nftContainer = $('#nftContainer');
@@ -294,47 +261,35 @@ button:hover {
 
     overlay.fadeIn();
   }
-
+  
+  
   // Close overlay when clicking close button
-  $('#closeOverlay').click(function() {
-    $('#overlay').fadeOut();
-  });
+$('#closeOverlay').click(function() {
+  $('#overlay').fadeOut();
+});
+  
 
-  // Function to load NFTs for a specific page
-  function loadNFTs(page) {
+// Function to load NFTs for a specific page
+  function loadNFTs(startTokenId, endTokenId) {
     // Clear existing content
     $('#nftContainer').empty();
 
     // Display loading spinner
     $('.loading').fadeIn();
 
-    // Number of items to display per page
-    const itemsPerPage = 100;
-
-    // Calculate start and end token IDs for the page
-    const startTokenId = (page - 1) * itemsPerPage + 1;
-    const endTokenId = startTokenId + itemsPerPage - 1;
-
-    // Processed rarities and weapons for this page
+    // Processed rarities and weapons for this range
     const processedRarities = {};
     const processedWeapons = {};
 
-    // Loop through token IDs for the page
+    // Loop through token IDs for the range
     for (let tokenId = startTokenId; tokenId <= endTokenId; tokenId++) {
-      // Get the token URI
-      contract.methods.tokenURI(tokenId).call(function(error, tokenURI) {
-        if (error) {
-          console.error(error);
-        } else {
-          // Add CORS proxy prefix to the token URI
-          const corsTokenURI = corsProxy + tokenURI;
+      // Construct the token URI based on the server endpoint
+      const serverEndpoint = 'https://checkmate.pawsndisguise.co.nz/JSON/jsonData_' + tokenId + '.json';
 
-          // Fetch metadata from the token URI using the CORS proxy
-          $.getJSON(corsTokenURI, function(metadata) {
-            // Display NFT information
-            addNFTToGrid(metadata, processedRarities, processedWeapons);
-          });
-        }
+      // Fetch metadata from the server endpoint
+      $.getJSON(serverEndpoint, function(metadata) {
+        // Display NFT information
+        addNFTToGrid(metadata, processedRarities, processedWeapons);
       });
     }
 
@@ -342,10 +297,87 @@ button:hover {
     $('.loading').fadeOut();
   }
 
+  // Bind click events to load NFTs for specific ranges
+  $('#button1').click(function() {
+    loadNFTs(1, 100);
+  });
+
+  $('#button2').click(function() {
+    loadNFTs(101, 200);
+  });
+
+  $('#button3').click(function() {
+    loadNFTs(201, 300);
+  });
+
+  $('#button4').click(function() {
+    loadNFTs(301, 400);
+  });
+
+  $('#button5').click(function() {
+    loadNFTs(401, 500);
+  });
+
+  $('#button6').click(function() {
+    loadNFTs(501, 600);
+  });
+
+  $('#button7').click(function() {
+    loadNFTs(601, 700);
+  });
+
+  $('#button8').click(function() {
+    loadNFTs(701, 800);
+  });
+
+  $('#button9').click(function() {
+    loadNFTs(801, 900);
+  });
+
+  $('#button10').click(function() {
+    loadNFTs(901, 1000);
+  });
+
+  $('#button11').click(function() {
+    loadNFTs(1001, 1100);
+  });
+
+  $('#button12').click(function() {
+    loadNFTs(1101, 1200);
+  });
+
+  $('#button13').click(function() {
+    loadNFTs(1201, 1300);
+  });
+
+  $('#button14').click(function() {
+    loadNFTs(1301, 1400);
+  });
+
+  $('#button15').click(function() {
+    loadNFTs(1401, 1500);
+  });
+
+  $('#button16').click(function() {
+    loadNFTs(1501, 1600);
+  });
+
+  $('#button17').click(function() {
+    loadNFTs(1601, 1700);
+  });
+
+  $('#button18').click(function() {
+    loadNFTs(1701, 1800);
+  });
+
+  $('#button19').click(function() {
+    loadNFTs(1801, 1900);
+  });
+
+  $('#button20').click(function() {
+    loadNFTs(1901, 2000);
+  });
+
   // Load initial NFTs on page load
   loadNFTs(1);
 </script>
-
-
-</body>
-</html>
