@@ -19,6 +19,7 @@
     .raritySection {
       margin-bottom: 20px;
       text-align: left;
+      font-color: #00e49e;;
     }
 
     .nftContainer {
@@ -182,6 +183,9 @@ button:hover {
 </div>
 
  <script>
+ 
+
+ 
   // Function to add NFTs to the grid
   function addNFTToGrid(metadata, processedRarities, processedWeapons) {
     const nftContainer = $('#nftContainer');
@@ -296,6 +300,17 @@ $('#closeOverlay').click(function() {
     // Hide loading spinner
     $('.loading').fadeOut();
   }
+  
+  // Load initial NFTs on page load
+$(document).ready(function() {
+  // Bind click events to load NFTs for specific ranges
+  $('#button1').click(function() {
+    loadNFTs(1, 100);
+  });
+
+  // Call the loadNFTs function on page load
+  loadNFTs(1, 100);
+  
 
   // Bind click events to load NFTs for specific ranges
   $('#button1').click(function() {
@@ -377,7 +392,11 @@ $('#closeOverlay').click(function() {
   $('#button20').click(function() {
     loadNFTs(1901, 2000);
   });
+  
+  
+});
 
-  // Load initial NFTs on page load
-  loadNFTs(1);
+
 </script>
+</body>
+</html>
