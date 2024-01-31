@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Havens Compass Weapons</title>
+  <!-- Include jQuery -->
+  <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+  <!-- Include web3.js -->
+  <script src="https://cdn.jsdelivr.net/npm/web3@1.5.3/dist/web3.min.js"></script>
+  <style>
+    body {
+      background-color: #131313;
+      color: #fff;
+      text-align: center;
+      font-family: 'Antema', sans-serif;
+    }
+
+    .raritySection {
+      margin-bottom: 20px;
+      text-align: left;
+    }
+
+    .nftContainer {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .nftItem {
+      text-align: center;
+      width: 250px; /* Adjust the width as needed */
+      height: auto; /* Maintain the aspect ratio */
+      margin-bottom: 10px; /* Add some margin between items */
+      color: #00e49e;
+    }
+
+    .nftItem img {
+      max-width: 100%;
+      max-height: 100%;
+      cursor: pointer;
+    }
+
+    #overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.8);
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+    }
+
+    #overlay img {
+      max-width: 80%;
+      max-height: 80%;
+      border: 2px solid #fff;
+      border-radius: 8px;
+      margin: 20px 0;
+    }
+
+    #overlay p {
+      font-size: 16px;
+      margin: 10px 0;
+    }
+
+    #closeOverlay {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      font-size: 20px;
+      cursor: pointer;
+      color: #fff;
+    }
+
+    #overlayRarity {
+      font-size: 18px;
+      margin: 10px 0;
+    }
+
+    h1 {
+      margin-bottom: 20px;
+    }
+
+    h2 {
+      margin: 0;
+    }
+
+button {
+  background-color: #00e49e;
+  color: #fff; /* Change text color to white */
+  border: none;
+  padding: 10px 20px;
+  font-size: 16px;
+  font-family: 'Antema', sans-serif; /* Change font family */
+  font-weight: bold;
+  border-radius: 5px;
+  margin: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+button:hover {
+  background-color: #00c08b;
+}
+
+    .loading {
+      color: #00e49e;
+      margin-top: 20px;
+      display: none;
+      font-family: 'Antema', sans-serif;
+      font-size: 30px;
+      text-align: center; /* Center text */
+    }
+
+    .loading span {
+      display: block; /* Display each span on a new line */
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .spinner {
+      border: 4px solid rgba(255, 255, 255, 0.3);
+      border-top: 4px solid #00e49e;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
+      display: inline-block;
+      margin-top: 10px; /* Add some margin between text and spinner */
+    }
+
+  </style>
+</head>
+<body>
+
+<h1>Havens Compass Skins</h1>
+<center><p>Click on a button below to load a range of minted skins for Havens Compass. There are 2000 token variants and this page will load 100 at a time. Click on an item to view it's details.</p></center>
+
+<!-- Pagination buttons -->
+<div>
+  <button onclick="loadNFTs(1)">1-100</button>
+  <button onclick="loadNFTs(2)">101-200</button>
+<button onclick="loadNFTs(2)">201-300</button>
+<button onclick="loadNFTs(2)">301-400</button>
+<button onclick="loadNFTs(2)">401-500</button>
+<button onclick="loadNFTs(2)">601-700</button>
+<button onclick="loadNFTs(2)">701-800</button>
+<button onclick="loadNFTs(2)">801-900</button>
+<button onclick="loadNFTs(2)">901-1000</button>
+<button onclick="loadNFTs(2)">1001-1100</button>
+<button onclick="loadNFTs(2)">1101-1200</button>
+<button onclick="loadNFTs(2)">1201-1300</button>
+<button onclick="loadNFTs(2)">1301-1400</button>
+<button onclick="loadNFTs(2)">1401-1500</button>
+<button onclick="loadNFTs(2)">1501-1600</button>
+<button onclick="loadNFTs(2)">1601-1700</button>
+<button onclick="loadNFTs(2)">1701-1800</button>
+<button onclick="loadNFTs(2)">1801-1900</button>
+<button onclick="loadNFTs(2)">1901-2000</button>
+  <!-- Add more buttons as needed -->
+</div>
+
+<div class="loading">
+  <center>
+    <span>Loading Skin Data...</span>
+    <span class="spinner"></span></center>
+</div>
+<div id="nftContainer"></div>
+
+<div id="overlay">
+  <div id="closeOverlay">&#x2715;</div>
+  <img id="overlayImage" alt="Overlay Image">
+  <p id="overlayName"></p>
+  <p id="overlayRarity"></p>
+</div>
+
+<script>
+  // Set the contract address and RPC endpoint
+  const contractAddress = '0x6D1a6B840714420D425c2F2658CEF390dbD809A7';
+  const rpcEndpoint = 'https://mainnet.skalenodes.com/v1/green-giddy-denebola';
+  const corsProxy = 'https://corsproxy.io/?';
+
+  // Include the OpenZeppelin ERC-721 ABI
+  const abi = [
+    {
+      "constant": true,
+      "inputs": [{"name": "_owner", "type": "address"}],
+      "name": "balanceOf",
+      "outputs": [{"name": "balance", "type": "uint256"}],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [{"name": "_tokenId", "type": "uint256"}],
+      "name": "tokenURI",
+      "outputs": [{"name": "", "type": "string"}],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+  ];
+
+  // Initialize web3 with the provided RPC endpoint
+  const web3 = new Web3(new Web3.providers.HttpProvider(rpcEndpoint));
+
+  // Create a contract instance
+  const contract = new web3.eth.Contract(abi, contractAddress);
+
+  // Function to add NFTs to the grid
+  function addNFTToGrid(metadata, processedRarities, processedWeapons) {
+    const nftContainer = $('#nftContainer');
+
+    // Check if 'attributes' array exists
+    if (!metadata.attributes || !Array.isArray(metadata.attributes)) {
+      console.error('Invalid metadata format. Missing or invalid "attributes" array:', metadata);
+      return;
+    }
+
+    const rarityAttribute = metadata.attributes.find(attr => attr.trait_type === 'rarity');
+    const itemNameAttribute = metadata.attributes.find(attr => ['Weapon', 'Character Skin'].includes(attr.trait_type));
+
+    // Check if the required attributes are present
+    if (!rarityAttribute) {
+      console.error('Missing "rarity" attribute in metadata:', metadata);
+      return;
+    }
+
+    if (!itemNameAttribute) {
+      console.error('Missing "Weapon" or "Character Skin" attribute in metadata:', metadata);
+      return;
+    }
+
+    const rarity = rarityAttribute.value;
+    const itemName = itemNameAttribute.value;
+
+    // Check if the item name has been processed for this rarity
+    if (!processedWeapons[itemName + rarity]) {
+      processedWeapons[itemName + rarity] = true;
+
+      // Check if the rarity has been processed
+      if (!processedRarities[rarity]) {
+        processedRarities[rarity] = true;
+
+        // Create a section for this rarity
+        const raritySection = $('<div>').addClass('raritySection ' + rarity.replace(/\s+/g, '') + 'Section').attr('id', rarity.replace(/\s+/g, '') + 'Section');
+        raritySection.append($('<h2>' + rarity + '</h2>').css('margin-bottom', '10px'));
+        raritySection.append($('<div>').addClass('nftContainer'));
+        nftContainer.append(raritySection);
+      }
+
+      // Add the NFT to the corresponding section
+      const nftDiv = $('<div>').addClass('nftItem');
+      const image = $('<img src="' + metadata.image + '" alt="NFT Image">');
+
+      // Set up click event to show overlay
+      image.click(function() {
+        showOverlay(metadata, itemName);
+      });
+
+      nftDiv.append(image);
+      nftDiv.append('<p>Name: ' + itemName + '</p>');
+      $('#' + rarity.replace(/\s+/g, '') + 'Section .nftContainer').append(nftDiv);
+    }
+  }
+
+  // Function to show overlay
+  function showOverlay(metadata, itemName) {
+    const overlay = $('#overlay');
+    const overlayImage = $('#overlayImage');
+    const overlayName = $('#overlayName');
+    const overlayRarity = $('#overlayRarity');
+
+    overlayImage.attr('src', metadata.image);
+    overlayName.text('Name: ' + itemName);
+
+    // Find the rarity attribute
+    const rarityAttribute = metadata.attributes.find(attr => attr.trait_type === 'rarity');
+
+    if (rarityAttribute) {
+      overlayRarity.text('Rarity: ' + rarityAttribute.value);
+    } else {
+      console.error('Missing "rarity" attribute in metadata:', metadata);
+      overlayRarity.text('Rarity: Unknown');
+    }
+
+    overlay.fadeIn();
+  }
+
+  // Close overlay when clicking close button
+  $('#closeOverlay').click(function() {
+    $('#overlay').fadeOut();
+  });
+
+  // Function to load NFTs for a specific page
+  function loadNFTs(page) {
+    // Clear existing content
+    $('#nftContainer').empty();
+
+    // Display loading spinner
+    $('.loading').fadeIn();
+
+    // Number of items to display per page
+    const itemsPerPage = 100;
+
+    // Calculate start and end token IDs for the page
+    const startTokenId = (page - 1) * itemsPerPage + 1;
+    const endTokenId = startTokenId + itemsPerPage - 1;
+
+    // Processed rarities and weapons for this page
+    const processedRarities = {};
+    const processedWeapons = {};
+
+    // Loop through token IDs for the page
+    for (let tokenId = startTokenId; tokenId <= endTokenId; tokenId++) {
+      // Get the token URI
+      contract.methods.tokenURI(tokenId).call(function(error, tokenURI) {
+        if (error) {
+          console.error(error);
+        } else {
+          // Add CORS proxy prefix to the token URI
+          const corsTokenURI = corsProxy + tokenURI;
+
+          // Fetch metadata from the token URI using the CORS proxy
+          $.getJSON(corsTokenURI, function(metadata) {
+            // Display NFT information
+            addNFTToGrid(metadata, processedRarities, processedWeapons);
+          });
+        }
+      });
+    }
+
+    // Hide loading spinner
+    $('.loading').fadeOut();
+  }
+
+  // Load initial NFTs on page load
+  loadNFTs(1);
+</script>
+
+
+</body>
+</html>
