@@ -2,7 +2,7 @@
 
 Welcome to the Havens Compass Skins website! This website showcases a collection of minted skins for Havens Compass, each represented as a unique Non-Fungible Token (NFT). The website allows users to load and view details of these skins in a visually appealing and user-friendly manner.
 
-Production URL: http://havenscompass-skins.xyz/
+Production URL: http://havenscompass-skins.xyz/ (Live soon - Waiting on DNS)
 
 ## Features
 
