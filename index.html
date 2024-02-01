@@ -8,7 +8,7 @@
   <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
   <!-- Include web3.js -->
   <script src="https://cdn.jsdelivr.net/npm/web3@1.5.3/dist/web3.min.js"></script>
-  <link rel="shortcut icon" href="icon.ico" type="image/x-icon" />
+    <link rel="shortcut icon" href="icon.ico" type="image/x-icon" />
   <style>
     body {
       background-color: #131313;
@@ -20,8 +20,21 @@
     .raritySection {
       margin-bottom: 20px;
       text-align: left;
-      font-color: #00e49e;;
+      font-color: #00e49e;
     }
+    
+    
+    a:link {
+  color: #00e49e;
+  background-color: transparent;
+  text-decoration: none;
+}
+
+a:visited {
+  color: #00e49e;
+  background-color: transparent;
+  text-decoration: none;
+}
 
     .nftContainer {
       display: flex;
@@ -69,6 +82,7 @@
       margin: 10px 0;
     }
 
+
     #closeOverlay {
       position: absolute;
       top: 10px;
@@ -90,6 +104,34 @@
     h2 {
       margin: 0;
     }
+    
+
+    #tokenIdInput {
+      padding: 8px;
+      font-size: 16px;
+      border: 2px solid #00e49e;
+      border-radius: 5px;
+      margin-right: 5px;
+      width: 150px;
+      font-family: 'Antema', sans-serif;
+    }
+
+    #searchButton {
+      background-color: #00e49e;
+      color: #fff;
+      border: none;
+      padding: 10px 15px;
+      font-size: 16px;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+      font-family: 'Antema', sans-serif;
+    }
+
+    #searchButton:hover {
+      background-color: #00c08b;
+    }
+    
 
 button {
   background-color: #00e49e;
@@ -142,8 +184,18 @@ button:hover {
 </head>
 <body>
 
-<h1>Havens Compass Skins</h1>
-<center><p>Click on a button below to load a range of minted skins for Havens Compass. There are 2000 token variants and this page will load 100 at a time. Click on an item to view it's details.</p></center>
+<h1>Havens Compass Skins by <a href="https://linktr.ee/nftpixels" target="_blank">Nftpixels</a></h1>
+<center><p>Search for a token ID below, or click on a button to load a range of minted skins for Havens Compass. There are 2000 token variants and this page will load 100 at a time. Click on an item to view it's details.</p></center>
+
+
+<div>
+  
+  <input type="text" id="tokenIdInput" placeholder="e.g. 123">
+  <button id="searchButton">Search</button>
+</div>
+
+<br><br>
+
 
 <!-- Pagination buttons -->
 <div>
@@ -180,11 +232,46 @@ button:hover {
   <div id="closeOverlay">&#x2715;</div>
   <img id="overlayImage" alt="Overlay Image">
   <p id="overlayName"></p>
+  <p id="overlayRarityPercentage"></p>
   <p id="overlayRarity"></p>
 </div>
 
  <script>
  
+
+  function searchTokenId() {
+    const tokenIdInput = $('#tokenIdInput').val();
+    const tokenId = parseInt(tokenIdInput);
+
+    if (isNaN(tokenId) || tokenId <= 0 || tokenId > 2000) {
+      alert('Please enter a valid Token ID between 1 and 2000.');
+      return;
+    }
+
+    // Construct the token URI based on the server endpoint
+    const serverEndpoint = 'https://checkmate.pawsndisguise.co.nz/JSON/jsonData_' + tokenId + '.json';
+
+    // Fetch metadata from the server endpoint
+    $.getJSON(serverEndpoint, function(metadata) {
+      // Extract trait information for the skin name
+      const itemNameAttribute = metadata.attributes.find(attr => ['Weapon', 'Character Skin'].includes(attr.trait_type));
+
+      if (!itemNameAttribute) {
+        console.error('Missing "Weapon" or "Character Skin" attribute in metadata:', metadata);
+        alert('Failed to retrieve skin information for Token ID: ' + tokenId);
+        return;
+      }
+
+      const itemName = itemNameAttribute.value;
+
+      // Display NFT information
+      showOverlay(metadata, itemName);
+    });
+  }
+
+  // Bind click event to search for a specific token ID
+  $('#searchButton').click(searchTokenId);
+
 
  
   // Function to add NFTs to the grid
@@ -243,6 +330,8 @@ button:hover {
       $('#' + rarity.replace(/\s+/g, '') + 'Section .nftContainer').append(nftDiv);
     }
   }
+  
+  
 
   // Function to show overlay
   function showOverlay(metadata, itemName) {
@@ -250,18 +339,47 @@ button:hover {
     const overlayImage = $('#overlayImage');
     const overlayName = $('#overlayName');
     const overlayRarity = $('#overlayRarity');
+    const overlayRarityPercentage = $('#overlayRarityPercentage');
 
     overlayImage.attr('src', metadata.image);
-    overlayName.text('Name: ' + itemName);
+    overlayName.html('<strong style="color: #00e49e;">Name: </strong>' + itemName);
 
     // Find the rarity attribute
     const rarityAttribute = metadata.attributes.find(attr => attr.trait_type === 'rarity');
 
     if (rarityAttribute) {
-      overlayRarity.text('Rarity: ' + rarityAttribute.value);
+      overlayRarity.html('<strong style="color: #00e49e;">Rarity: </strong>' + rarityAttribute.value);
+
+      // Display the rarity percentage based on rarity type
+      let rarityPercentage;
+
+      switch (rarityAttribute.value) {
+        case 'Basic':
+          rarityPercentage = 35.45;
+          break;
+        case 'Common':
+          rarityPercentage = 27.45;
+          break;
+        case 'Rare':
+          rarityPercentage = 25.10;
+          break;
+        case 'Ultra Rare':
+          rarityPercentage = 8.75;
+          break;
+        case 'Legendary':
+          rarityPercentage = 3.25;
+          break;
+        default:
+          rarityPercentage = 0;
+          break;
+      }
+
+      overlayRarityPercentage.html('<strong style="color: #00e49e;">Scarcity:</strong> ' + rarityPercentage.toFixed(2) + '%');
+
     } else {
       console.error('Missing "rarity" attribute in metadata:', metadata);
       overlayRarity.text('Rarity: Unknown');
+      overlayRarityPercentage.text('Rarity Percentage: 0.00%');
     }
 
     overlay.fadeIn();
